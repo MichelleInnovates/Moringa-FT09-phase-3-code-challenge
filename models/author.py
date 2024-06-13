@@ -1,21 +1,25 @@
 from database.connection import get_db_connection
 
 class Author:
-    def __init__(self, id, name):
-        if not isinstance(id, int):
-            raise ValueError("id must be an integer")
-        if not isinstance(name, str) or len(name) == 0:
-            raise ValueError("name must be a non_empty string")
-        
+    def __init__(self, name, id=None):
         self._id = id
-        self._name = name
+        self._name = self.validate_name(name)
         self._save()
 
     def _save(self):
         connection = get_db_connection()
         cursor = connection.cursor()
-        cursor.execute('INSERT INTO authors (id, name) VALUES(?, ?)', (self._id, self._name))
-        connection.commit()
+
+        # Check if the author name already exists
+        cursor.execute('SELECT id FROM authors WHERE name = ?', (self._name,))
+        existing_author = cursor.fetchone()
+        if existing_author:
+            self._id = existing_author['id']
+        else:
+            cursor.execute('INSERT INTO authors (name) VALUES(?)', (self._name,))
+            connection.commit()
+            self._id = cursor.lastrowid
+
         cursor.close()
         connection.close()
 
@@ -26,6 +30,14 @@ class Author:
     @property
     def name(self):
         return self._name
+
+    @staticmethod
+    def validate_name(name):
+        if not isinstance(name, str):
+            raise ValueError("Name must be a string")
+        if len(name) == 0:
+            raise ValueError("Name must be longer than 0 characters")
+        return name
 
     def articles(self):
         connection = get_db_connection()
@@ -51,6 +63,3 @@ class Author:
         cursor.close()
         connection.close()
         return magazines
-
-    # def __repr__(self):
-    #     return f'<Author {self.name}>'

@@ -129,16 +129,19 @@ def main():
     '''
 
     # Create an author
-    cursor.execute('INSERT INTO authors (name) VALUES (?)', (author_name,))
-    author_id = cursor.lastrowid # Use this to fetch the id of the newly created author
+    # cursor.execute('INSERT INTO authors (name) VALUES (?)', (author_name,))
+    author = Author(name=author_name)
+    author_id = author.id # Use this to fetch the id of the newly created author
 
     # Create a magazine
-    cursor.execute('INSERT INTO magazines (name, category) VALUES (?,?)', (magazine_name, magazine_category))
-    magazine_id = cursor.lastrowid # Use this to fetch the id of the newly created magazine
+    # cursor.execute('INSERT INTO magazines (name, category) VALUES (?,?)', (magazine_name, magazine_category))
+    magazine = Magazine(name=magazine_name, category=magazine_category)
+    magazine_id = magazine.id # Use this to fetch the id of the newly created magazine
 
     # Create an article
-    cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES (?, ?, ?, ?)',
-                   (article_title, article_content, author_id, magazine_id))
+    # cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES (?, ?, ?, ?)',
+                #    (article_title, article_content, author_id, magazine_id)
+    article = Article(title=article_title, content=article_content, author_id=author_id, magazine_id=magazine_id)
 
     conn.commit()
 
@@ -159,15 +162,15 @@ def main():
     # Display results
     print("\nMagazines:")
     for magazine in magazines:
-        print(Magazine(magazine["id"], magazine["name"], magazine["category"]))
+        print(Magazine(magazine["name"], magazine["category"], magazine["id"]))
 
     print("\nAuthors:")
     for author in authors:
-        print(Author(author["id"], author["name"]))
+        print(Author(author["name"], author["id"]))
 
     print("\nArticles:")
     for article in articles:
-        print(Article(article["id"], article["title"], article["content"], article["author_id"], article["magazine_id"]))
+        print(Article( article["title"], article["content"], article["author_id"], article["magazine_id"],article["id"]))
 
     
 

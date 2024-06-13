@@ -2,10 +2,8 @@ from database.connection import get_db_connection
 from models.author import Author
 from models.magazine import Magazine
 
-
-
 class Article:
-    def __init__(self, id, title, content, author_id , magazine_id):
+    def __init__(self, title, content, author_id, magazine_id, id=None):
         self._id = id
         self._title = title
         self._content = content
@@ -16,25 +14,33 @@ class Article:
     @property
     def id(self):
         return self._id
-    
+
     @property
     def title(self):
         return self._title
-    
+
     @property
     def author(self):
         return Author.get(self._author_id)
-    
+
     @property
     def magazine(self):
         return Magazine.get(self._magazine_id)
-    
+
     def _save(self):
         connection = get_db_connection()
         cursor = connection.cursor()
-        cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES(?,?,?,?)', (self._title, self._content, self._author_id, self._magazine_id))
-        self._id = cursor.lastrowid
-        connection.commit()
+
+        # Check if the article title already exists
+        cursor.execute('SELECT id FROM articles WHERE title = ?', (self._title,))
+        existing_article = cursor.fetchone()
+        if existing_article:
+            self._id = existing_article['id']
+        else:
+            cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES(?,?,?,?)', (self._title, self._content, self._author_id, self._magazine_id))
+            self._id = cursor.lastrowid
+            connection.commit()
+
         cursor.close()
         connection.close()
 
